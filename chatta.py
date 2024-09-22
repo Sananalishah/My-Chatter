@@ -98,15 +98,12 @@ for user_message, bot_message in st.session_state.history:
 # Clear float after chat bubbles to maintain alignment
 st.markdown("<div style='clear: both;'></div>", unsafe_allow_html=True)
 
-# Text input for user message
+# Single text input for user message
 user_input = st.text_input("Type your message", key="user_input")
 
 # Enter button for mobile interface
 if st.button("Send"):
     submit_message()
-
-# Call submit_message when Enter is pressed in the text input
-st.text_input("Press Enter or click Send", key="user_input", on_change=submit_message)
 
 # Prevent editing once deployed
 if st.session_state.history:
