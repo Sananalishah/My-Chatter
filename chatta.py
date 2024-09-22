@@ -69,12 +69,17 @@ def submit_message():
             # Clear the input field after submission
             st.session_state["user_input"] = ""
 
+# Function to copy user message to clipboard
+def copy_to_clipboard(message):
+    st.write(f'<script>navigator.clipboard.writeText("{message}");</script>', unsafe_allow_html=True)
+
 # Display chat history in professional style bubbles
 for user_message, bot_message in st.session_state.history:
     # User message (right-aligned)
     st.markdown(f"""
     <div class="bubble user-bubble">
         {user_message}
+        <button onclick="copy_to_clipboard('{user_message}')" style="border: none; background: none; cursor: pointer; color: #007bff; text-decoration: underline;">Copy</button>
     </div>
     """, unsafe_allow_html=True)
 
@@ -93,8 +98,15 @@ for user_message, bot_message in st.session_state.history:
 # Clear float after chat bubbles to maintain alignment
 st.markdown("<div style='clear: both;'></div>", unsafe_allow_html=True)
 
-# Text input for user message, directly submits when 'Enter' is pressed
-st.text_input("Type your message", key="user_input", on_change=submit_message)
+# Text input for user message
+user_input = st.text_input("Type your message", key="user_input")
+
+# Enter button for mobile interface
+if st.button("Send"):
+    submit_message()
+
+# Call submit_message when Enter is pressed in the text input
+st.text_input("Press Enter or click Send", key="user_input", on_change=submit_message)
 
 # Prevent editing once deployed
 if st.session_state.history:
