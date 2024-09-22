@@ -1,9 +1,9 @@
+import os
 import google.generativeai as genai
 import streamlit as st
-import time
 
 # Google API configuration
-GOOGLE_API_KEY = "AIzaSyAlojWi6VpcR6-kYhCwVAb2rw2U6J0lXco"
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")  # Use environment variable
 genai.configure(api_key=GOOGLE_API_KEY)
 
 # Model Initialization
@@ -22,8 +22,8 @@ page_bg_style = """
 <style>
     body {
         background-color: #f0f4f8;  /* Light refreshing color */
+        font-family: Arial, sans-serif;
     }
-
     .bubble {
         border-radius: 10px;
         padding: 10px 15px;
@@ -32,7 +32,6 @@ page_bg_style = """
         box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
         transition: background-color 0.3s;
     }
-
     .user-bubble {
         background-color: #A8C6FA;  /* User message color */
         color: black;
@@ -40,7 +39,6 @@ page_bg_style = """
         float: right;
         clear: both;
     }
-
     .bot-bubble {
         background-color: #d1e7dd;  /* Bot response color */
         color: black;
@@ -64,19 +62,12 @@ if "history" not in st.session_state:
 def submit_message():
     user_input = st.session_state["user_input"]
     if user_input.strip() != "":  # Ensure non-empty messages
-        # Show loading animation
-        st.session_state["loading"] = True
-        time.sleep(1)  # Simulate loading time
-        
-        # Get bot response
-        response = getResponseFromModel(user_input)
-        
-        # Append user message and bot response to the chat history
-        st.session_state.history.append((user_input, response))
-        
-        # Clear the input field after submission
-        st.session_state["user_input"] = ""
-        st.session_state["loading"] = False
+        with st.spinner('Generating response...'):
+            response = getResponseFromModel(user_input)
+            # Append user message and bot response to the chat history
+            st.session_state.history.append((user_input, response))
+            # Clear the input field after submission
+            st.session_state["user_input"] = ""
 
 # Display chat history in professional style bubbles
 for user_message, bot_message in st.session_state.history:
@@ -97,10 +88,14 @@ for user_message, bot_message in st.session_state.history:
     # Separate box for code responses (if applicable)
     if "```" in bot_message:  # Checks if the response contains code
         code_snippet = bot_message.split("```")[1]
-        st.code(code_snippet, language='python')  # Assuming it's Python code, adjust as needed
+        st.code(code_snippet, language='python')  # Assuming it's Python code
 
 # Clear float after chat bubbles to maintain alignment
 st.markdown("<div style='clear: both;'></div>", unsafe_allow_html=True)
 
 # Text input for user message, directly submits when 'Enter' is pressed
 st.text_input("Type your message", key="user_input", on_change=submit_message)
+
+# Prevent editing once deployed
+if st.session_state.history:
+    st.session_state.user_input = ""
